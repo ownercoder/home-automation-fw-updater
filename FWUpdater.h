@@ -15,6 +15,8 @@ class FWUpdater {
 public:
 	FWUpdater(HomeConfigParser *config);
 	virtual ~FWUpdater();
+
+
 private:
 	RF24 * radio;
 };

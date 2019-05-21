@@ -9,7 +9,7 @@ using namespace CONFIG4CPP_NAMESPACE;
 
 typedef struct {
 	uint16_t ce_pin;
-} NRF;
+} NRF_Config;
 
 class HomeConfigParser
 {
@@ -23,7 +23,7 @@ public:
 	//--------
 	// Operations to query information about recipes
 	//--------
-	const NRF getNRFConfig() throw (HomeConfigParserException);
+	const NRF_Config getNRFConfig() throw (HomeConfigParserException);
 
 private:
 	//--------

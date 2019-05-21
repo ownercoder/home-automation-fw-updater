@@ -44,14 +44,14 @@ HomeConfigParser::parse(
 	m_parseCalled = true;
 }
 
-const NRF
+const NRF_Config
 HomeConfigParser::getNRFConfig() throw (HomeConfigParserException)
 {
 	assert(m_parseCalled);
 	try {
 		std::string scope(m_scope.c_str());
 		scope += ".nrf";
-		NRF nrf;
+		NRF_Config nrf;
 		nrf.ce_pin = m_cfg->lookupInt(scope.c_str(), "pin");
 		return nrf;
 	} catch(const ConfigurationException & ex) {

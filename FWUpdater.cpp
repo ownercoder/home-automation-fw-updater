@@ -8,7 +8,7 @@
 #include "FWUpdater.h"
 
 FWUpdater::FWUpdater(HomeConfigParser *config) {
-	NRF nrf = config->getNRFConfig();
+	NRF_Config nrf = config->getNRFConfig();
 	radio = new RF24(nrf.ce_pin, 0);
 }
 

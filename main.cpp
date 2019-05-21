@@ -2,6 +2,7 @@
 #include <iostream>
 #include "RF24/RF24.h"
 #include "FWUpdater.h"
+#include "nrf.h"
 #include <fstream>
 #include "HomeConfigParser.h"
 
@@ -58,7 +59,6 @@ void setup(void) {
 
 	printf("\r\n----------%d----------\r\n", length);
 
-	int hexPerLine = 0;
 	int hexLen = 0;
 
 	char *fwBuffer = new char[length];
@@ -70,13 +70,17 @@ void setup(void) {
 			"\r\n------------------------------------------------------------\r\n");
 
 	hexLen = 0;
-	hexPerLine = 0;
 	int startIdx = 0;
-	int bufLength = 32;
+	int bufLength = 30;
+	uint16_t operationByte = NRF_CMD_FWDATA;
 	int buf = bufLength;
+	char *data = new char[32];
+
 	while (startIdx < length) {
-		char radioBuffer[bufLength];
-		memcpy_index(&radioBuffer, fwBuffer, startIdx, buf);
+		memset(data, 1, sizeof(*data));
+		memcpy(data, (const void*)&operationByte, sizeof(operationByte));
+
+		memcpy_index(data + sizeof(operationByte), fwBuffer, startIdx, buf);
 		startIdx += bufLength;
 		if (startIdx + bufLength > length) {
 			buf = length - startIdx;
@@ -84,20 +88,16 @@ void setup(void) {
 
 		printf(
 				"\r\n------------------start: %d count: %d------------------\r\n",
-				startIdx, sizeof(radioBuffer));
-		radio.writeBlocking(&radioBuffer, sizeof(radioBuffer), 1000);
+				startIdx, sizeof(*data));
 
-		for (unsigned int i = 0; i < sizeof(radioBuffer); i++) {
+		radio.writeBlocking(data, sizeof(*data), 1000);
+
+		for (unsigned int i = 0; i < sizeof(*data); i++) {
 			hexLen++;
-			printf("%02x", (char) radioBuffer[i]);
+			printf("%02X", data[i]);
 			if (hexLen == 4) {
 				hexLen = 0;
-				hexPerLine++;
 				printf(" ");
-			}
-			if (hexPerLine == 14) {
-				hexPerLine = 0;
-				printf("\r\n");
 			}
 		}
 	}
@@ -106,20 +106,11 @@ void setup(void) {
 		printf("Error while sending data\r\n");
 	}
 
-//    while(!is.eof()) {
-//    	is.read((char*)&buffer, bufLength);
-//    	length -= bufLength;
-//    	if (length < 0) {
-//    		bufLength = length+1;
-//    	}
-//    	printf("\r\n----------%d-------\r\n", bufLength);
-//
-//
-////    	if (!radio.write(buffer, bufLength)) {
-////    		printf("Error while sending data\r\n");
-////    		break;
-////    	}
-//    }
+	operationByte = NRF_CMD_RESET;
+	memset(data, 1, sizeof(*data));
+	memcpy(data, (const void*)&operationByte, sizeof(operationByte));
+	radio.writeBlocking(data, sizeof(*data), 1000);
+
 	printf("\r\n");
 	printf("File success sent\r\n");
 }
@@ -144,6 +135,7 @@ int main(int argc, char** argv) {
 	}
 
 	FWUpdater *updater = new FWUpdater(parser);
+
 
 //	cout << "Driver initialized, please check values of /dev/nrf24" << endl;
 //	setup();
